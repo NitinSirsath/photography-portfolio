@@ -14,7 +14,7 @@ function HomeComponent() {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <h1 className="font-serif text-[5rem] md:text-[8rem] leading-none mb-4 text-foreground font-black tracking-tight flex items-start justify-center">
-          Monokai
+          Cinematic World
           <span className="text-2xl md:text-4xl ml-2 mt-4 md:mt-8 border-2 border-foreground rounded px-1.5 py-0.5 leading-none">®</span>
         </h1>
         <p className="text-[10px] md:text-xs tracking-[0.2em] font-medium uppercase text-muted-foreground mb-32">

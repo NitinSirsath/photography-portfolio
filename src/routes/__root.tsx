@@ -25,10 +25,10 @@ function RootComponent() {
           <Link to="/" className="w-8 h-8 rounded border border-border flex items-center justify-center font-serif text-foreground hover:bg-white/5 transition-colors text-lg">
             M
           </Link>
-          <Link to="/" className="hover:text-foreground transition-colors [&.active]:text-foreground">
+          <Link to="/artworks" className="hover:text-foreground transition-colors [&.active]:text-foreground">
             Artworks
           </Link>
-          <Link to="/" className="hover:text-foreground transition-colors [&.active]:text-foreground">
+          <Link to="/photos" className="hover:text-foreground transition-colors [&.active]:text-foreground">
             Photos
           </Link>
           <Link to="/about" className="hover:text-foreground transition-colors [&.active]:text-foreground">
