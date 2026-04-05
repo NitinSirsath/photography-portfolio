@@ -12,11 +12,12 @@ export default function NewArtworkPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const form = e.currentTarget
     setIsSubmitting(true)
     setError('')
     setSuccess('')
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
     
     // We send this massive blob of data across the boundary to the Node.js action
     const response = await createArtworkAction(formData)
@@ -25,7 +26,7 @@ export default function NewArtworkPage() {
       setError(response.message || "Failed")
     } else {
       setSuccess("Artwork deployed successfully! It is now live.")
-      e.currentTarget.reset()
+      form.reset()
     }
     
     setIsSubmitting(false)
