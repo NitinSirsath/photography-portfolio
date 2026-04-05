@@ -1,12 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+"use client"
+
 import { motion } from 'framer-motion'
 import { Aperture, Settings, Maximize, Clock } from 'lucide-react'
 
-export const Route = createFileRoute('/about')({
-  component: AboutComponent,
-})
-
-function AboutComponent() {
+export default function AboutComponent() {
   return (
     <div className="flex-1 flex flex-col items-center pt-32 pb-24 bg-background px-4 md:px-8">
       <div className="w-full max-w-4xl flex flex-col items-start text-left">

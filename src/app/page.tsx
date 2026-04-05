@@ -1,11 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+"use client"
+
 import { motion } from 'framer-motion'
 
-export const Route = createFileRoute('/')({
-  component: HomeComponent,
-})
-
-function HomeComponent() {
+export default function HomeComponent() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center pt-32 pb-8 text-center bg-background">
       <motion.div 

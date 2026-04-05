@@ -1,10 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+"use client"
+
 import { motion } from 'framer-motion'
 import { ArtworkCard, type Artwork } from '@/components/ui/ArtworkCard'
-
-export const Route = createFileRoute('/artworks')({
-  component: ArtworksComponent,
-})
 
 const DUMMY_ARTWORKS: Artwork[] = [
   { id: 1, title: 'Abstract System', desc: 'AN EXPLORATION OF NOISE AND GEOMETRIC GRIDS.', aspect: 'aspect-[4/3]', span: 'md:col-span-2' },
@@ -16,7 +13,7 @@ const DUMMY_ARTWORKS: Artwork[] = [
   { id: 7, title: 'Fire Card', desc: 'GENERATIVE ARTWORK BASED ON A CENTURY OLD FIRE', aspect: 'aspect-square', span: 'md:col-span-1' },
 ]
 
-function ArtworksComponent() {
+export default function ArtworksComponent() {
   return (
     <div className="flex-1 flex flex-col items-center pt-32 pb-24 text-center bg-background px-4 md:px-8">
       <motion.div 

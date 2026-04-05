@@ -1,10 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+"use client"
+
 import { motion } from 'framer-motion'
 import { PhotoCard, type PhotoSeries } from '@/components/ui/PhotoCard'
-
-export const Route = createFileRoute('/photos')({
-  component: PhotosComponent,
-})
 
 const DUMMY_PHOTOS: PhotoSeries[] = [
   { id: 1, title: 'Andalusia, Spain', desc: "SEVILLE'S PLAZAS, RONDA'S GORGE AND GRANADA'S ARCHITECTURE", count: 27 },
@@ -18,7 +15,7 @@ const DUMMY_PHOTOS: PhotoSeries[] = [
   { id: 9, title: 'Parco Dei Mostri', desc: 'THE 16TH CENTURY GARDEN OF BOMARZO', count: 16 },
 ]
 
-function PhotosComponent() {
+export default function PhotosComponent() {
   return (
     <div className="flex-1 flex flex-col items-center pt-32 pb-24 text-center bg-background px-4 md:px-8">
       <motion.div 
