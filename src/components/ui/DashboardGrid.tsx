@@ -1,18 +1,41 @@
 "use client"
+
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { PlusSquare, Type, Camera, Settings, Database } from 'lucide-react'
+import { PlusSquare, Type, Camera, Settings, Database, LogOut, User as UserIcon } from 'lucide-react'
+import type { User } from '@prisma/client'
+import { signOutAction } from '@/app/actions/auth'
 
-export default function AdminDashboard() {
+export function DashboardGrid({ user }: { user: User }) {
   return (
-    <div className="p-8 pt-24 md:pt-32 max-w-6xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-serif text-4xl lg:text-6xl font-black tracking-tight mb-4 text-foreground">Creator Studio</h1>
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-16 border-b border-border/50 pb-8 flex items-center gap-4">
-          <span className="flex items-center gap-2 text-green-500"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM ONLINE</span> 
-          <span>•</span> 
-          <span>POSTGRESQL SYNCHRONIZED</span>
-        </p>
+    <div className="p-8 pt-24 md:pt-32 max-w-6xl mx-auto w-full">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-border/50 pb-8 gap-8">
+        <div>
+          <h1 className="font-serif text-4xl lg:text-6xl font-black tracking-tight mb-4 text-foreground">Creator Studio</h1>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-4">
+            <span className="flex items-center gap-2 text-green-500"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM ONLINE</span> 
+            <span>•</span> 
+            <span>POSTGRESQL SYNCHRONIZED</span>
+          </p>
+        </div>
+
+        {/* User Identity Panel */}
+        <div className="flex flex-col items-end gap-3 text-right">
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="font-mono text-xs font-bold uppercase tracking-widest">{user.username}</div>
+              <div className="text-[10px] text-muted-foreground">{user.email}</div>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center">
+              <UserIcon size={20} />
+            </div>
+          </div>
+          <form action={signOutAction}>
+             <button type="submit" className="text-[9px] uppercase tracking-widest font-bold text-red-500 hover:text-red-400 flex items-center gap-2 transition-colors">
+               <LogOut size={12} /> Disconnect
+             </button>
+          </form>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -41,20 +64,6 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center text-xs font-mono uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
               <PlusSquare size={14} className="mr-2" /> Create Series
-            </div>
-          </div>
-        </Link>
-
-        {/* Configurations Portal */}
-        <Link href="#" className="group block h-full cursor-not-allowed opacity-50">
-          <div className="h-full bg-transparent border border-dashed border-border/50 rounded-2xl p-8 flex flex-col justify-between relative">
-            <div className="text-muted-foreground mb-16">
-              <Settings size={32} strokeWidth={1.5} className="mb-6" />
-              <h2 className="font-serif text-2xl font-bold mb-2">Settings</h2>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold">About Section & Achievements</p>
-            </div>
-            <div className="flex items-center text-[10px] font-mono uppercase tracking-widest text-orange-500">
-              [ Offline Module ]
             </div>
           </div>
         </Link>

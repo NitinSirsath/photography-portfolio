@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { createClient } from '@/lib/supabase/server'
 
-export function Navbar() {
+export async function Navbar() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <header className="absolute top-0 z-50 w-full px-8 py-6 flex items-center justify-between">
       <div className="flex items-center gap-8 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -18,7 +22,18 @@ export function Navbar() {
           About
         </Link>
       </div>
-      <div>
+      <div className="flex items-center gap-6">
+        <div className="text-[11px] font-bold tracking-widest uppercase">
+          {user ? (
+            <Link href="/dashboard" className="text-foreground hover:text-muted-foreground border-b border-foreground/30 pb-1 transition-colors">
+              Studio
+            </Link>
+          ) : (
+            <Link href="/login" className="text-green-500 hover:text-green-400 transition-colors">
+              Connect
+            </Link>
+          )}
+        </div>
         <ThemeToggle />
       </div>
     </header>

@@ -32,8 +32,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // This deeply refreshes the session cookie if it's expired
-  await supabase.auth.getUser()
+  // Validate the user's active session
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Guard Clause: Prevent unauthorized access to the Creator Studio
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
+    const loginUrl = new URL('/login', request.url)
+    return NextResponse.redirect(loginUrl)
+  }
 
   return supabaseResponse
 }
