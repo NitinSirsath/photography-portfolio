@@ -8,23 +8,105 @@ datasource db {
 }
 
 // ----------------------------------------------------
-// 1. ARTWORKS MODEL
+// 1. IDENTITY & MULTI-TENANCY
+// ----------------------------------------------------
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique // e.g. /monokai
+  displayName   String?
+  avatarUrl     String?
+  bio           String?   @db.Text
+  
+  // JSON field for custom profile aesthetics (tabs, colors, layout)
+  profileConfig Json?     
+  
+  // Relations: A user owns content and interactions
+  artworks      Artwork[]
+  photoSeries   PhotoSeries[]
+  comments      Comment[]
+  likes         Like[]
+  
+  // Self-referential graph for social following
+  followers     Follows[] @relation("following")
+  following     Follows[] @relation("follower")
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Follows {
+  followerId  String
+  followingId String
+  
+  follower    User @relation("follower", fields: [followerId], references: [id])
+  following   User @relation("following", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
+
+// ----------------------------------------------------
+// 2. SOCIAL MECHANICS
+// ----------------------------------------------------
+model Like {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  artworkId      String?
+  artwork        Artwork?    @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  
+  photoSeriesId  String?
+  photoSeries    PhotoSeries? @relation(fields: [photoSeriesId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime    @default(now())
+
+  // A user can only like a specific post once
+  @@unique([userId, artworkId])
+  @@unique([userId, photoSeriesId])
+}
+
+model Comment {
+  id             String      @id @default(cuid())
+  text           String      @db.Text
+  
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  artworkId      String?
+  artwork        Artwork?    @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  
+  photoSeriesId  String?
+  photoSeries    PhotoSeries? @relation(fields: [photoSeriesId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime    @default(now())
+}
+
+// ----------------------------------------------------
+// 3. ARTWORKS MODEL (Now User-Owned)
 // ----------------------------------------------------
 model Artwork {
   id          String   @id @default(cuid())
   title       String
-  description String
+  description String   @db.Text
   
-  // Media endpoints (pointing to S3 / Supabase storage)
+  // Foreign Key to the creator
+  userId      String
+  author      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Media endpoints
   imageUrl    String
-  videoUrl    String?  // Optional video for hover states
+  videoUrl    String?  
   
-  // Grid layout rules (to maintain our masonry appearance)
-  aspectRatio String   @default("aspect-square") // e.g., aspect-[4/3]
+  // Grid layout rules 
+  aspectRatio String   @default("aspect-square")
   colSpan     String   @default("md:col-span-1")
   
-  // The small pill badges (Animation, Choreography etc)
   tags        String[] 
+  
+  // Social metrics mapping
+  likes       Like[]
+  comments    Comment[]
   
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -32,28 +114,35 @@ model Artwork {
 }
 
 // ----------------------------------------------------
-// 2. PHOTO EXPERIENCES (SERIES)
+// 4. PHOTO EXPERIENCES (SERIES)
 // ----------------------------------------------------
 model PhotoSeries {
   id          String   @id @default(cuid())
   title       String
-  description String
-  coverImage  String   // S3 Url
+  description String   @db.Text
+  coverImage  String   
   
-  // A Series contains many actual photos inside of it
+  // Foreign Key to the creator
+  userId      String
+  author      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   photos      Photo[]
+  likes       Like[]
+  comments    Comment[]
   
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// The individual photos belonging to a series
+// ----------------------------------------------------
+// 5. INNER PHOTOS (Attached to a Series)
+// ----------------------------------------------------
 model Photo {
   id            String   @id @default(cuid())
-  url           String   // S3 Url
+  url           String   
   
-  // Exif Data (Lens, ISO, Camera)
+  // Exif Data
   aperture      String?  
   shutterSpeed  String?
   focalLength   String?
@@ -63,22 +152,4 @@ model Photo {
   series        PhotoSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
   
   createdAt     DateTime @default(now())
-}
-
-// ----------------------------------------------------
-// 3. ABOUT / CAREER (Optional to keep in DB vs Code)
-// ----------------------------------------------------
-model Achievement {
-  id          String   @id @default(cuid())
-  title       String   // e.g., "A Trip to Japan"
-  subtitle    String   // e.g., "Awwwards Site of the Day"
-  year        String   // e.g., "2019"
-  type        AchievementType // Distinguish Awards vs Exhibitions
-  
-  createdAt   DateTime @default(now())
-}
-
-enum AchievementType {
-  AWARD
-  EXHIBITION
 }
