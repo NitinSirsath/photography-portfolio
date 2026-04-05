@@ -1,13 +1,84 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
+// We will connect this to your Cloud Postgres Database shortly!
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+}
+
+// ----------------------------------------------------
+// 1. ARTWORKS MODEL
+// ----------------------------------------------------
+model Artwork {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  
+  // Media endpoints (pointing to S3 / Supabase storage)
+  imageUrl    String
+  videoUrl    String?  // Optional video for hover states
+  
+  // Grid layout rules (to maintain our masonry appearance)
+  aspectRatio String   @default("aspect-square") // e.g., aspect-[4/3]
+  colSpan     String   @default("md:col-span-1")
+  
+  // The small pill badges (Animation, Choreography etc)
+  tags        String[] 
+  
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// 2. PHOTO EXPERIENCES (SERIES)
+// ----------------------------------------------------
+model PhotoSeries {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  coverImage  String   // S3 Url
+  
+  // A Series contains many actual photos inside of it
+  photos      Photo[]
+  
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// The individual photos belonging to a series
+model Photo {
+  id            String   @id @default(cuid())
+  url           String   // S3 Url
+  
+  // Exif Data (Lens, ISO, Camera)
+  aperture      String?  
+  shutterSpeed  String?
+  focalLength   String?
+  iso           String?
+  
+  seriesId      String
+  series        PhotoSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+}
+
+// ----------------------------------------------------
+// 3. ABOUT / CAREER (Optional to keep in DB vs Code)
+// ----------------------------------------------------
+model Achievement {
+  id          String   @id @default(cuid())
+  title       String   // e.g., "A Trip to Japan"
+  subtitle    String   // e.g., "Awwwards Site of the Day"
+  year        String   // e.g., "2019"
+  type        AchievementType // Distinguish Awards vs Exhibitions
+  
+  createdAt   DateTime @default(now())
+}
+
+enum AchievementType {
+  AWARD
+  EXHIBITION
 }

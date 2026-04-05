@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 
 /src/generated/prisma
+
+# Next.js
+.next
+out
+
+# env
+.env
+.env.*
+!.env.example
