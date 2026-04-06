@@ -18,6 +18,9 @@ export async function Navbar() {
         <Link href="/photos" className="hover:text-foreground transition-colors">
           Photos
         </Link>
+        <Link href="/community" className="hover:text-foreground transition-colors">
+          Community
+        </Link>
         <Link href="/about" className="hover:text-foreground transition-colors">
           About
         </Link>

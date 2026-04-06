@@ -108,20 +108,24 @@ export default async function PortfolioArchivePage({
           </div>
         ) : (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 px-4">
-             {user.artworks.map((artwork) => (
-                <div key={artwork.id} className="break-inside-avoid">
+             {/* Merge artworks and photo series into a unified timeline */}
+             {[
+               ...user.artworks.map((a: any) => ({ ...a, _type: 'artwork', _image: a.imageUrl })),
+               ...user.photoSeries.map((p: any) => ({ ...p, _type: 'photo-series', _image: p.coverImage, aspectRatio: 'aspect-[4/5]' })),
+             ]
+              .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .map((item: any) => (
+                <div key={item.id} className="break-inside-avoid">
                   <ArtworkCard
-                    id={artwork.id}
-                    title={artwork.title}
-                    description={artwork.description}
-                    imageUrl={artwork.imageUrl}
-                    aspectRatio={artwork.aspectRatio}
+                    id={item.id}
+                    title={item.title}
+                    description={item.description}
+                    imageUrl={item._image}
+                    aspectRatio={item.aspectRatio || 'aspect-square'}
                     className="w-full h-auto shadow-2xl rounded-2xl border border-transparent hover:border-foreground/20 transition-colors"
                   />
                 </div>
               ))}
-              
-              {/* Note: Photo Series would be interleaved here using a merged array sorted by createdAt */}
           </div>
         )}
 
