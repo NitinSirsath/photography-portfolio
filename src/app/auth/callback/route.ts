@@ -49,11 +49,21 @@ export async function GET(request: Request) {
         // Generate a clean vanity URL name from their email 
         const baseName = authUser.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
         
+        // Handle username collisions (e.g., john@gmail.com vs john@yahoo.com)
+        let username = baseName
+        let suffix = 0
+        while (true) {
+          const taken = await prisma.user.findUnique({ where: { username } })
+          if (!taken) break
+          suffix++
+          username = `${baseName}${suffix}`
+        }
+
         await prisma.user.create({
           data: {
-            id: authUser.id, // Explicitly map Supabase Auth UUID to our Prisma CUID/UUID
+            id: authUser.id,
             email: authUser.email,
-            username: baseName, 
+            username, 
             displayName: authUser.user_metadata?.full_name || baseName,
             avatarUrl: authUser.user_metadata?.avatar_url || '',
           }

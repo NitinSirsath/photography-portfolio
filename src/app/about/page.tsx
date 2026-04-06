@@ -1,180 +1,84 @@
-"use client"
+import Link from 'next/link'
+import { Code2, Camera, Users, Shield } from 'lucide-react'
 
-import { motion } from 'framer-motion'
-import { Aperture, Settings, Maximize, Clock } from 'lucide-react'
-
-export default function AboutComponent() {
+export default function AboutPage() {
   return (
     <div className="flex-1 flex flex-col items-center pt-32 pb-24 bg-background px-4 md:px-8">
-      <div className="w-full max-w-4xl flex flex-col items-start text-left">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full"
-        >
-          <h1 className="font-serif text-[4rem] md:text-[6.5rem] leading-none mb-12 text-foreground font-black tracking-tight">
-            Biography
+      <div className="w-full max-w-4xl">
+
+        <div className="mb-24">
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 text-foreground leading-[1.1]">
+            About the <br/><span className="text-muted-foreground italic font-light">Platform</span>
           </h1>
-        </motion.div>
-
-        <div className="flex flex-col md:flex-row gap-16 md:gap-24 mb-24 w-full">
-          {/* Main Biography Text */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="w-full md:w-2/3 space-y-8 text-muted-foreground text-[16px] leading-[1.8]"
-          >
-            <p>
-              Wimer Hazenberg has studied photography in art school and holds a MSc in Artificial
-              Intelligence. His creative tools consist of photos, data and code.
-            </p>
-            <p>
-              Born as an 80s kid, he learned to program at an early age and developed a lasting fascination
-              with how computers can produce aesthetically interesting work. This has led to a series of <strong className="text-foreground tracking-wide font-serif">Algorithmic Artworks</strong> in which he explores how algorithms and carefully calibrated randomness can generate art that is both unexpected and within the intended constraints.
-            </p>
-            <p>
-              Wimer is originally from Friesland, The Netherlands. He's currently living and working in Amsterdam.
-            </p>
-          </motion.div>
-
-          {/* Right sidebar micro-info */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="w-full md:w-1/3 pt-2"
-          >
-            <h3 className="text-[9px] uppercase font-bold tracking-[0.2em] text-muted-foreground mb-3">Algorithmic Artworks</h3>
-            <p className="text-xs text-muted-foreground/80 leading-relaxed mb-1">
-              Art created entirely with code, no AI involved.
-            </p>
-            <a href="#" className="text-xs text-foreground/80 hover:text-foreground border-b border-foreground/30 hover:border-foreground transition-all">
-              Read more in this article.
-            </a>
-          </motion.div>
+          <p className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-muted-foreground/80 font-bold border-y border-border/50 py-6">
+            A professional visual archive for photographers, artists, and creators.
+          </p>
         </div>
 
-        {/* Massive Centered Photo */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="w-full aspect-square md:aspect-[4/3] rounded-[2rem] bg-card border border-border/50 relative overflow-hidden mb-32 shadow-xl group"
-        >
-          {/* Dummy Placeholder View */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-muted to-background opacity-20"></div>
-          
-          <div className="absolute inset-0 flex items-center justify-center">
-            {/* Vague representation of a figure looking out to sea from the screenshot */}
-            <div className="w-2/3 h-1/2 border-b-2 border-dashed border-border flex items-end justify-center pb-0">
-               <div className="w-8 h-24 rounded-t-full bg-border/40"></div>
-            </div>
-          </div>
+        {/* Mission */}
+        <div className="mb-24 max-w-2xl space-y-8 text-muted-foreground text-base leading-[1.8]">
+          <p>
+            This platform is a curated space for visual professionals to deploy, 
+            organize, and showcase their highest-quality work. Think of it as your 
+            permanent portfolio — a place where clients, collaborators, and peers 
+            can discover what you create.
+          </p>
+          <p>
+            Every creator gets a personalized vanity URL, a customizable profile 
+            with brand colors, and a masonry gallery that does justice to images 
+            of any aspect ratio. Social features like appreciations and comments 
+            exist to validate quality, not chase engagement.
+          </p>
+        </div>
 
-          {/* Bottom Left Exif Badge */}
-          <div className="absolute bottom-6 left-6 flex items-center gap-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 p-1.5 px-3">
-            <div className="flex items-center gap-1.5 border-r border-white/20 pr-3 mr-1 text-white/80">
-              <Aperture size={10} />
-              <span className="text-[10px] uppercase font-mono tracking-widest mt-0.5">f/</span>
-            </div>
-            <div className="flex items-center gap-1.5 border-r border-white/20 pr-3 mr-1 text-white/80">
-              <Clock size={10} />
-              <span className="text-[10px] uppercase font-mono tracking-widest mt-0.5">s</span>
-            </div>
-            <div className="flex items-center gap-1.5 border-r border-white/20 pr-3 mr-1 text-white/80">
-              <Maximize size={10} />
-              <span className="text-[10px] uppercase font-mono tracking-widest mt-0.5">mm</span>
-            </div>
-            <div className="flex items-center gap-1.5 pl-1 text-white/80">
-              <Settings size={10} />
-              <span className="text-[10px] uppercase font-mono tracking-widest mt-0.5">ISO</span>
-            </div>
-          </div>
-
-          {/* Right Vertical Copyright */}
-          <div className="absolute bottom-16 right-4 rotate-180" style={{ writingMode: 'vertical-rl' }}>
-            <p className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold whitespace-nowrap">
-              © 2006 - {new Date().getFullYear()} MONOKAI. ALL RIGHTS RESERVED
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
+          <div className="bg-card border border-border/50 rounded-2xl p-8 space-y-4">
+            <Camera size={28} className="text-foreground" />
+            <h3 className="font-serif text-xl font-bold">Photo Journals</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Organize photography into curated series with cover images and 
+              individual shots containing full EXIF metadata.
             </p>
           </div>
-        </motion.div>
-
-        {/* Awards and Exhibitions */}
-        <div className="w-full space-y-24">
-          {/* Awards */}
-          <div>
-            <h3 className="text-[9px] uppercase font-bold tracking-[0.2em] text-muted-foreground mb-12">Awards</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2">
-                    <span className="text-lg opacity-50">&rarr;</span> A Trip to Japan
-                  </h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                    Awwwards Site of the Day<br/>2019
-                  </p>
-                </div>
-                <div className="pt-8">
-                  <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2">
-                    <span className="text-lg opacity-50">&rarr;</span> Fire Card
-                  </h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                    Tender Icon Award<br/>2021
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground hover:text-primary transition-colors cursor-pointer flex items-center gap-2">
-                    <span className="text-lg opacity-50">&rarr;</span> Minimal Wim
-                  </h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                    Awwwards Site of the Day<br/>2020
-                  </p>
-                </div>
-                <div className="pt-8">
-                  <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground hover:text-primary transition-colors cursor-pointer">
-                    Monokai
-                  </h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                    FWA Site of the Day<br/>2004
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="bg-card border border-border/50 rounded-2xl p-8 space-y-4">
+            <Code2 size={28} className="text-foreground" />
+            <h3 className="font-serif text-xl font-bold">Generative Artworks</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Deploy algorithmic art, illustrations, and creative coding outputs 
+              with full tagging and layout control.
+            </p>
           </div>
-
-          {/* Exhibitions */}
-          <div>
-            <h3 className="text-[9px] uppercase font-bold tracking-[0.2em] text-muted-foreground mb-12">Featured in Exhibitions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-              <div>
-                <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
-                  NFTJapan
-                </h4>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                  TOKYO TOWER<br/>
-                  Minato City, Tokyo, Japan<br/>
-                  2025
-                </p>
-              </div>
-              <div>
-                <h4 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
-                  Art Golden GAI
-                </h4>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-2 uppercase tracking-wide">
-                  SAISON DAIKANYAMA<br/>
-                  Shibuya, Tokyo, Japan<br/>
-                  2025
-                </p>
-              </div>
-            </div>
+          <div className="bg-card border border-border/50 rounded-2xl p-8 space-y-4">
+            <Users size={28} className="text-foreground" />
+            <h3 className="font-serif text-xl font-bold">Community</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Discover other creators, follow their work, and engage through 
+              professional appreciations and technical discussions.
+            </p>
+          </div>
+          <div className="bg-card border border-border/50 rounded-2xl p-8 space-y-4">
+            <Shield size={28} className="text-foreground" />
+            <h3 className="font-serif text-xl font-bold">Your Data, Your Domain</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Every piece of content is owned by its creator. Secured with 
+              row-level policies and encrypted authentication.
+            </p>
           </div>
         </div>
+
+        {/* CTA */}
+        <div className="text-center border-t border-border/50 pt-16">
+          <h2 className="font-serif text-3xl font-bold mb-4">Ready to deploy your work?</h2>
+          <p className="text-sm text-muted-foreground mb-8">Join the network and claim your vanity URL.</p>
+          <Link 
+            href="/login" 
+            className="inline-flex items-center gap-4 bg-foreground text-background px-8 py-4 rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:scale-[0.98] transition-transform"
+          >
+            Connect Identity
+          </Link>
+        </div>
+
       </div>
     </div>
   )
