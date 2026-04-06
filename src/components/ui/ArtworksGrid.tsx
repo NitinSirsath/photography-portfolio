@@ -22,7 +22,17 @@ export function ArtworksGrid({ artworks }: { artworks: Artwork[] }) {
 
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min">
         {artworks.map((art, idx) => (
-          <ArtworkCard key={art.id} art={art} idx={idx} />
+          <ArtworkCard 
+            key={art.id} 
+            id={art.id}
+            title={art.title}
+            description={art.description}
+            imageUrl={art.imageUrl}
+            aspectRatio={art.aspectRatio}
+            className={art.colSpan}
+            tags={art.tags}
+            idx={idx} 
+          />
         ))}
       </div>
     </div>

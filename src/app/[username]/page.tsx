@@ -1,18 +1,16 @@
 import { notFound } from "next/navigation"
 import prisma from "@/lib/prisma"
 import { ArtworkCard } from "@/components/ui/ArtworkCard"
-import { User, MapPin, Link as LinkIcon, Calendar } from "lucide-react"
-import Link from "next/link"
+import { Link as LinkIcon, MapPin } from "lucide-react"
 
-// Define param inference for Next.js App Router (Async Params in Next.js 15+)
-export default async function ProfilePage({
+export default async function PortfolioArchivePage({
   params,
 }: {
   params: Promise<{ username: string }>
 }) {
   const { username } = await params
 
-  // 1. Resolve Identity and Fetch Entire Profile Sub-Graph
+  // 1. Resolve Identity and Fetch Portfolio Graph
   const user = await prisma.user.findUnique({
     where: { username },
     include: {
@@ -23,124 +21,112 @@ export default async function ProfilePage({
       photoSeries: {
         where: { isPublished: true },
         orderBy: { createdAt: 'desc' }
-      },
-      _count: {
-        select: { followers: true, following: true, artworks: true }
       }
     }
   })
 
-  // 2. Terminate gracefully if Identity is Invalid
-  if (!user) {
-    notFound()
-  }
+  if (!user) notFound()
 
-  // 3. Extract aesthetic JSON configuration (Fallbacks to global theme)
-  const profileConfig = user.profileConfig as { accentColor?: string, layout?: string } | null
-  const accentColor = profileConfig?.accentColor || "#a6e22e" // Monokai Green Fallback
+  // 2. Extract Professional Aesthetic JSON
+  const profileConfig = user.profileConfig as { accentColor?: string, headerImage?: string } | null
+  const accentColor = profileConfig?.accentColor || "#a6e22e" 
+
+  const totalDeployments = user.artworks.length + user.photoSeries.length
 
   return (
-    <div className="min-h-screen bg-background pt-24 px-8 max-w-6xl mx-auto flex flex-col md:flex-row gap-16">
+    <div className="min-h-screen bg-background">
       
       {/* ------------------------------------------- */}
-      {/* LEFT COLUMN: STATIC IDENTITY PANEL */}
+      {/* 1. PROFESSIONAL HEADER MATTE */}
       {/* ------------------------------------------- */}
-      <aside className="w-full md:w-80 flex-shrink-0 relative">
-        <div className="sticky top-32 space-y-8">
+      <div className="pt-32 pb-16 px-8 max-w-7xl mx-auto border-b border-border/50">
+        <div className="flex flex-col md:flex-row items-center gap-12 text-center md:text-left">
           
-          {/* Avatar Core */}
-          <div className="w-32 h-32 rounded-3xl bg-card border-2 flex items-center justify-center overflow-hidden relative shadow-2xl transition-all" style={{ borderColor: accentColor }}>
+          <div className="w-40 h-40 rounded-full border-4 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-2xl relative group" style={{ borderColor: accentColor }}>
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.displayName || user.username} className="w-full h-full object-cover" />
             ) : (
-              <User size={48} className="opacity-50" />
+              <span className="font-serif text-5xl font-black text-muted-foreground">
+                {user.username.substring(0,2).toUpperCase()}
+              </span>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+            <div className="absolute inset-0 bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
 
-          <div>
-            <h1 className="font-serif text-3xl font-bold text-foreground">
+          <div className="flex-1 max-w-3xl">
+            <h1 className="font-serif text-5xl md:text-7xl font-black text-foreground mb-4 tracking-tighter">
               {user.displayName || user.username}
             </h1>
-            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground mt-2 flex items-center gap-2">
-              @{user.username}
-            </p>
+            
+            {user.bio ? (
+              <p className="text-lg md:text-xl text-muted-foreground font-light leading-relaxed mb-8">
+                {user.bio}
+              </p>
+            ) : (
+              <p className="text-lg md:text-xl text-muted-foreground font-light italic opacity-50 mb-8">
+                Visual artist and architectural observer.
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-8 font-mono text-[10px] uppercase tracking-widest font-bold">
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground">Monokai ID</span>
+                <span style={{ color: accentColor }}>@{user.username}</span>
+              </div>
+              <div className="flex flex-col gap-1 border-l border-border/50 pl-8">
+                <span className="text-muted-foreground">Visual Asset Cache</span>
+                <span className="text-foreground">{totalDeployments} Elements</span>
+              </div>
+              <div className="flex flex-col gap-1 border-l border-border/50 pl-8">
+                <span className="text-muted-foreground">Network Link</span>
+                <a href="#" className="flex items-center gap-2 hover:text-foreground transition-colors mix-blend-difference">
+                   <LinkIcon size={12} /> Contact Node
+                </a>
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-6 border-y border-border/50 py-6">
-            <div>
-              <p className="font-mono text-xl font-bold" style={{ color: accentColor }}>{user._count.followers}</p>
-              <p className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Followers</p>
-            </div>
-            <div>
-              <p className="font-mono text-xl font-bold" style={{ color: accentColor }}>{user._count.following}</p>
-              <p className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Following</p>
-            </div>
-            <div>
-              <p className="font-mono text-xl font-bold" style={{ color: accentColor }}>{user._count.artworks}</p>
-              <p className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Deployments</p>
-            </div>
-          </div>
-
-          {user.bio && (
-            <p className="text-sm text-foreground/80 leading-relaxed max-w-sm">
-              {user.bio}
-            </p>
-          )}
-
-          <div className="space-y-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            <div className="flex items-center gap-3">
-              <Calendar size={14} /> Joined {user.createdAt.getFullYear()}
-            </div>
-            <div className="flex items-center gap-3">
-              <LinkIcon size={14} /> <span className="hover:text-foreground cursor-pointer transition-colors">monokai.io/</span>
-            </div>
-          </div>
-          
-          <button 
-            className="w-full py-4 rounded-xl font-mono text-xs uppercase tracking-widest font-bold text-background transition-all hover:scale-[0.98]" 
-            style={{ backgroundColor: accentColor }}
-          >
-            Initiate Link
-          </button>
         </div>
-      </aside>
+      </div>
 
       {/* ------------------------------------------- */}
-      {/* RIGHT COLUMN: DYNAMIC MEDIA GRID */}
+      {/* 2. THE VISUAL MASONRY ARCHIVE */}
       {/* ------------------------------------------- */}
-      <main className="flex-1 pb-32">
-        <div className="mb-12 flex gap-8 border-b border-border/50 pb-4 font-mono text-xs uppercase tracking-widest font-bold">
-          <button style={{ color: accentColor }} className="relative">
-            Artworks
-            <span className="absolute -bottom-[17px] left-0 right-0 h-[2px]" style={{ backgroundColor: accentColor }}></span>
-          </button>
-          <button className="text-muted-foreground hover:text-foreground transition-colors">
-            Journals
-          </button>
+      <main className="max-w-7xl mx-auto px-4 py-24">
+        
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground mb-16 px-4">
+           <span>Displaying Primary Archive</span>
+           <span className="flex items-center gap-4">
+             <span className="hidden sm:inline">Sorting Alg: Chronological</span>
+             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }}></span>
+           </span>
         </div>
 
-        {user.artworks.length === 0 ? (
-          <div className="py-32 text-center border border-dashed border-border/50 rounded-3xl">
-            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">No Media Deployed</p>
+        {totalDeployments === 0 ? (
+          <div className="text-center py-40 border border-dashed border-border/50 rounded-3xl mx-4">
+            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground font-bold">Terminal Empty. Identity has no deployed assets.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 auto-rows-[400px]">
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 px-4">
              {user.artworks.map((artwork) => (
-                <ArtworkCard
-                  key={artwork.id}
-                  id={artwork.id}
-                  title={artwork.title}
-                  description={artwork.description}
-                  imageUrl={artwork.imageUrl}
-                  aspectRatio={artwork.aspectRatio}
-                  className={artwork.colSpan}
-                />
+                <div key={artwork.id} className="break-inside-avoid">
+                  <ArtworkCard
+                    id={artwork.id}
+                    title={artwork.title}
+                    description={artwork.description}
+                    imageUrl={artwork.imageUrl}
+                    aspectRatio={artwork.aspectRatio}
+                    className="w-full h-auto shadow-2xl rounded-2xl border border-transparent hover:border-foreground/20 transition-colors"
+                  />
+                </div>
               ))}
+              
+              {/* Note: Photo Series would be interleaved here using a merged array sorted by createdAt */}
           </div>
         )}
-      </main>
 
+      </main>
+      
     </div>
   )
 }
