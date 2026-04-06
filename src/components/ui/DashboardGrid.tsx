@@ -67,6 +67,20 @@ export function DashboardGrid({ user }: { user: User }) {
             </div>
           </div>
         </Link>
+
+        {/* Configurations Portal */}
+        <Link href="/dashboard/settings" className="group block h-full">
+          <div className="h-full bg-card border border-border/50 rounded-2xl p-8 hover:bg-card/50 transition-colors flex flex-col justify-between relative overflow-hidden group-hover:border-orange-500/50">
+            <div className="text-foreground mb-16">
+              <Settings size={32} strokeWidth={1.5} className="mb-6 opacity-80 group-hover:opacity-100 transition-rotate" style={{ transitionDuration: '0.5s' }} />
+              <h2 className="font-serif text-2xl font-bold mb-2">Identity Core</h2>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Configure Visual Architecture</p>
+            </div>
+            <div className="flex items-center text-xs font-mono uppercase tracking-widest text-orange-500 group-hover:text-amber-400 transition-colors">
+              Synchronize
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Database Statistics */}

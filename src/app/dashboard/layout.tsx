@@ -14,8 +14,13 @@ export default function AdminLayout({
           <a href="/dashboard/artworks/new" className="block text-foreground border-l border-foreground pl-4">Deploy Artwork</a>
           
           <div className="pt-8 pb-2 border-b border-border/50 mb-8 mt-8">Photo Series</div>
-          <a href="/photos" className="block hover:text-foreground transition-colors">View Series</a>
-          <a href="/dashboard/photos/new" className="block hover:text-foreground transition-colors">Create Series</a>
+          <a href="/photos" className="block hover:text-foreground transition-colors">View Archive</a>
+          <a href="/dashboard/photos/new" className="block hover:text-foreground transition-colors">Deploy Series</a>
+
+          <div className="pt-8 pb-2 border-b border-border/50 mb-8 mt-8">Configurations</div>
+          <a href="/dashboard/settings" className="block text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-2">
+            Identity Core
+          </a>
         </nav>
       </aside>
 
