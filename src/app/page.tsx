@@ -112,6 +112,7 @@ export default async function Home() {
                     imageUrl={item.imageUrl}
                     aspectRatio={item.aspectRatio || 'aspect-square'}
                     className="h-[85%] flex-shrink-0"
+                    authorUsername={item.author.username}
                     likesCount={item.likesCount}
                     isLikedByMe={item.isLikedByMe}
                   />
