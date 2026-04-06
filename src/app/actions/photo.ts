@@ -5,6 +5,9 @@ import prisma from "@/lib/prisma"
 import { supabaseAdmin } from "@/lib/supabase"
 import crypto from 'crypto'
 
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
 export async function createPhotoSeriesAction(formData: FormData) {
   try {
     const title = formData.get("title") as string
@@ -14,6 +17,24 @@ export async function createPhotoSeriesAction(formData: FormData) {
     if (!title || !description || !image || image.size === 0) {
       throw new Error("Missing required fields or cover image is empty")
     }
+
+    // Authenticate the user
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll() {},
+        },
+      }
+    )
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized: Identity Verification Failed")
 
     // 1. Upload Cover Image to Supabase Storage
     const fileExt = image.name.split('.').pop()
@@ -48,6 +69,7 @@ export async function createPhotoSeriesAction(formData: FormData) {
         description,
         coverImage: publicUrl,
         isPublished: true,
+        userId: user.id
       }
     })
 
