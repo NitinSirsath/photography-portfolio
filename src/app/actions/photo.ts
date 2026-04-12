@@ -83,3 +83,30 @@ export async function createPhotoSeriesAction(formData: FormData) {
     return { success: false, message: error.message || "An unknown server error occurred" }
   }
 }
+
+export async function deletePhotoSeriesAction(id: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const series = await prisma.photoSeries.findUnique({ where: { id } })
+  if (!series || series.userId !== user.id) return { success: false, error: 'Series not found or unauthorized' }
+
+  try {
+    const url = new URL(series.coverImage)
+    const parts = url.pathname.split('/')
+    const path = parts.slice(parts.indexOf('portfolio-images') + 1).join('/')
+    if (path) await supabaseAdmin.storage.from('portfolio-images').remove([path])
+  } catch (err) {}
+
+  await prisma.photoSeries.delete({ where: { id } })
+  revalidatePath('/dashboard/content')
+  revalidatePath('/photos')
+  revalidatePath('/community')
+  return { success: true }
+}

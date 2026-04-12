@@ -45,6 +45,8 @@ export async function GET(request: Request) {
         where: { email: authUser.email }
       })
 
+      let finalUsername = ''
+
       if (!existingUser && authUser.email) {
         // Generate a clean vanity URL name from their email 
         const baseName = authUser.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -59,6 +61,8 @@ export async function GET(request: Request) {
           username = `${baseName}${suffix}`
         }
 
+        finalUsername = username
+
         await prisma.user.create({
           data: {
             id: authUser.id,
@@ -68,10 +72,12 @@ export async function GET(request: Request) {
             avatarUrl: authUser.user_metadata?.avatar_url || '',
           }
         })
+      } else if (existingUser) {
+        finalUsername = existingUser.username
       }
 
-      // Route the authenticated user directly into their new personal dashboard!
-      return NextResponse.redirect(`${origin}/dashboard`)
+      // Route the authenticated user directly into their new personal portfolio!
+      return NextResponse.redirect(`${origin}/${finalUsername}/home`)
     }
   }
 

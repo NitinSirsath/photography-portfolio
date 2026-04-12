@@ -5,6 +5,21 @@ import { AppreciationModule } from "@/components/ui/AppreciationModule"
 import { CommentThread } from "@/components/ui/CommentThread"
 import Link from "next/link"
 import { ArrowLeft, Calendar, Tag } from "lucide-react"
+import type { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string, id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const artwork = await prisma.artwork.findUnique({ where: { id } })
+  if (!artwork) return {}
+
+  return {
+    title: `${artwork.title} — Visual Archive`,
+    description: artwork.description,
+    openGraph: {
+      images: [artwork.imageUrl],
+    }
+  }
+}
 
 export default async function ArtworkDetailPage({
   params,
@@ -24,9 +39,16 @@ export default async function ArtworkDetailPage({
       author: { select: { username: true, displayName: true, avatarUrl: true } },
       likes: true,
       comments: {
+        where: { parentId: null }, // Fetch only top-level comments
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { username: true, displayName: true, avatarUrl: true } }
+          user: { select: { username: true, displayName: true, avatarUrl: true } },
+          replies: {
+            include: {
+              user: { select: { username: true, displayName: true, avatarUrl: true } }
+            },
+            orderBy: { createdAt: 'asc' }
+          }
         }
       }
     }
@@ -41,12 +63,15 @@ export default async function ArtworkDetailPage({
   const isLikedByMe = authUser ? artwork.likes.some(l => l.userId === authUser.id) : false
 
   // Serialize comments for client component
-  const serializedComments = artwork.comments.map(c => ({
+  const serializeComment = (c: any): any => ({
     id: c.id,
     text: c.text,
     createdAt: c.createdAt.toISOString(),
-    user: c.user
-  }))
+    user: c.user,
+    replies: c.replies?.map(serializeComment) || []
+  })
+
+  const serializedComments = artwork.comments.map(serializeComment)
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,9 +137,13 @@ export default async function ArtworkDetailPage({
             {artwork.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {artwork.tags.map(tag => (
-                  <span key={tag} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/50 text-[9px] font-mono uppercase tracking-widest text-muted-foreground bg-card">
+                  <Link 
+                    key={tag} 
+                    href={`/tags/${tag.toLowerCase()}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/50 text-[9px] font-mono uppercase tracking-widest text-muted-foreground bg-card hover:border-foreground/40 hover:text-foreground transition-colors"
+                  >
                     <Tag size={10} /> {tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}

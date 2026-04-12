@@ -21,6 +21,12 @@ model User {
   // JSON field for custom profile aesthetics (tabs, colors, layout)
   profileConfig Json?     
   
+  // Platform Additions
+  isAvailableForHire  Boolean @default(false)
+  portfolioViews      Int     @default(0)
+  socialLinks         Json?
+  tipJarUrl           String?
+  
   // Relations: A user owns content and interactions
   artworks      Artwork[]
   photoSeries   PhotoSeries[]
@@ -33,6 +39,30 @@ model User {
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  activities    Activity[] @relation("ActivityTarget")
+  actorActivities Activity[] @relation("ActivityActor")
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // FOLLOW, COMMENT, LIKE
+  
+  // The person who performed the action
+  actorId   String
+  actor     User     @relation("ActivityActor", fields: [actorId], references: [id], onDelete: Cascade)
+  
+  // The person who owns the content or was followed
+  targetId  String
+  target    User     @relation("ActivityTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  // Optional links to content
+  artworkId String?
+  seriesId  String?
+  commentId String?
+  
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Follows {
@@ -79,6 +109,11 @@ model Comment {
   photoSeriesId  String?
   photoSeries    PhotoSeries? @relation(fields: [photoSeriesId], references: [id], onDelete: Cascade)
   
+  // Nested comments (replies)
+  parentId       String?
+  parent         Comment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        Comment[]   @relation("CommentReplies")
+
   createdAt      DateTime    @default(now())
 }
 

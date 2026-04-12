@@ -41,6 +41,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Redirect logged-in users away from the marketing page to their portfolio
+  if (request.nextUrl.pathname === '/' && user) {
+    // Fetch their username from the DB via the API route to avoid Prisma in Edge runtime
+    const profileRes = await fetch(`${request.nextUrl.origin}/api/me`, {
+      headers: { Cookie: request.headers.get('cookie') || '' },
+    })
+    if (profileRes.ok) {
+      const { username } = await profileRes.json()
+      if (username) {
+        return NextResponse.redirect(new URL(`/${username}/home`, request.url))
+      }
+    }
+    // Fallback: if we can't resolve username yet, send to dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
   return supabaseResponse
 }
 
@@ -51,7 +67,6 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],

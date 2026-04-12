@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import prisma from "@/lib/prisma"
 import { createClient } from '@/lib/supabase/server'
 
-export async function createCommentAction(targetId: string, type: 'artwork' | 'photoSeries', text: string) {
+export async function createCommentAction(targetId: string, type: 'artwork' | 'photoSeries', text: string, parentId?: string) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -24,6 +24,7 @@ export async function createCommentAction(targetId: string, type: 'artwork' | 'p
     const data: any = {
       text: text.trim(),
       userId: user.id,
+      parentId: parentId || null
     }
 
     if (type === 'artwork') {
@@ -32,7 +33,32 @@ export async function createCommentAction(targetId: string, type: 'artwork' | 'p
       data.photoSeriesId = targetId
     }
 
-    await prisma.comment.create({ data })
+    const newComment = await prisma.comment.create({ data })
+
+    // Log Activity
+    try {
+      let targetUserId = ""
+      if (type === 'artwork') {
+        const asset = await prisma.artwork.findUnique({ where: { id: targetId }, select: { userId: true } })
+        targetUserId = asset?.userId || ""
+      } else {
+        const asset = await prisma.photoSeries.findUnique({ where: { id: targetId }, select: { userId: true } })
+        targetUserId = asset?.userId || ""
+      }
+
+      if (targetUserId && targetUserId !== user.id) {
+        await prisma.activity.create({
+          data: {
+            type: 'COMMENT',
+            actorId: user.id,
+            targetId: targetUserId,
+            commentId: newComment.id,
+            artworkId: type === 'artwork' ? targetId : null,
+            seriesId: type === 'photoSeries' ? targetId : null,
+          }
+        })
+      }
+    } catch (err) {}
 
     revalidatePath('/[username]/[type]/[id]', 'page')
 

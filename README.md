@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# Visual Archive
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Visual Archive — Portfolio hosting platform for photographers and visual artists.
 
-Currently, two official plugins are available:
+## Architecture Overview
+This is a Next.js 16 App Router application. 
+- **Database**: PostgreSQL (via Supabase) accessed with Prisma ORM.
+- **Authentication**: Supabase Auth (Google OAuth + Magic Links) with SSR cookies.
+- **Storage**: Supabase Storage for artworks, photos, and avatars.
+- **Styling**: Tailwind CSS + Monokai-inspired dark theme.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Routing
+- `/` — Platform landing page
+- `/community` — Discovery feed of all published works and creator directory
+- `/[username]` — Dedicated mini-site for each creator (fully branded via CSS variables)
+- `/dashboard` — Private CMS for creators to manage works, photo series, and portfolio settings
 
-## React Compiler
+## Setup Instructions
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd photography-portfolio
+   ```
 
-## Expanding the ESLint configuration
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. Setup environment variables by copying `.env.example` to `.env` and filling in the values.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+4. Push Prisma schema:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+5. Run development server:
+   ```bash
+   npm run dev
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Environment Variables
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Connection pool URL (pgbouncer) for Prisma queries. |
+| `DIRECT_URL` | Direct DB connection URL for `prisma db push`. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key for Supabase Auth/Storage. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret admin key for server actions to bypass RLS. |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Deployment (Vercel)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Connect your GitHub repository to Vercel.
+2. In the project settings, configure the environment variables as above.
+3. The Build Command should be: `prisma generate && next build`.
+4. Deploy!

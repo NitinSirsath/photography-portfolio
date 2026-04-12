@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 import { AppreciationModule } from '@/components/ui/AppreciationModule'
 import Link from 'next/link'
 
+import Image from 'next/image'
+
 function LinkOrDiv({ href, className, children }: { href?: string, className?: string, children: React.ReactNode }) {
   if (href) return <Link href={href} className={className}>{children}</Link>
   return <div className={className}>{children}</div>
@@ -38,9 +40,12 @@ export function ArtworkCard({
     >
       {/* 1. Main Visual Asset */}
       <LinkOrDiv href={authorUsername ? `/${authorUsername}/artworks/${id}` : undefined} className="relative w-full h-full rounded-2xl overflow-hidden border border-border/10 shadow-lg group-hover:shadow-2xl transition-all duration-700 block">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.02]"
-          style={{ backgroundImage: `url(${imageUrl})` }}
+        <Image 
+          src={imageUrl} 
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
         />
         
         {/* Subtle vignette for depth */}

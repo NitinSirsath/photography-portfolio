@@ -1,87 +1,141 @@
 import prisma from '@/lib/prisma'
-import Link from 'next/link'
-import { Users } from 'lucide-react'
+import { CommunityTabs } from '@/components/ui/CommunityTabs'
+import { createClient } from '@/lib/supabase/server'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Community — Visual Archive",
+  description: "Discover creators and artworks across the Visual Archive network.",
+}
 
 export const revalidate = 60
 
 export default async function CommunityPage() {
-  const creators = await prisma.user.findMany({
-    orderBy: { createdAt: 'desc' },
+  const supabase = await createClient()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+
+  let currentDbUser = null
+  if (authUser) {
+    currentDbUser = await prisma.user.findUnique({ where: { id: authUser.id } })
+  }
+  const creatorsCount = await prisma.user.count()
+  const worksCount = await prisma.artwork.count({ where: { isPublished: true } }) + await prisma.photoSeries.count({ where: { isPublished: true } })
+  const appreciationsCount = await prisma.like.count()
+
+  const allArtworks = await prisma.artwork.findMany({
+    where: { isPublished: true },
+    include: { author: true, _count: { select: { likes: true } } }
+  })
+  
+  const allSeries = await prisma.photoSeries.findMany({
+    where: { isPublished: true },
+    include: { author: true, _count: { select: { likes: true } } }
+  })
+
+  const posts = [
+    ...allArtworks.map(a => ({
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      _type: 'artwork',
+      _image: a.imageUrl,
+      aspectRatio: a.aspectRatio,
+      createdAt: a.createdAt,
+      author: a.author,
+      likes: a._count.likes
+    })),
+    ...allSeries.map(s => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      _type: 'photo-series',
+      _image: s.coverImage,
+      aspectRatio: 'aspect-[4/5]',
+      createdAt: s.createdAt,
+      author: s.author,
+      likes: s._count.likes
+    }))
+  ].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const users = await prisma.user.findMany({
     include: {
-      _count: {
-        select: { artworks: true, photoSeries: true, followers: true }
-      }
+      artworks: { where: { isPublished: true }, include: { _count: { select: { likes: true } } } },
+      photoSeries: { where: { isPublished: true }, include: { _count: { select: { likes: true } } } },
+      _count: { select: { followers: true } },
+      followers: currentDbUser ? {
+        where: { followerId: currentDbUser.id }
+      } : false
     }
   })
 
+  const oneMonthAgo = new Date()
+  oneMonthAgo.setDate(oneMonthAgo.getDate() - 30)
+
+  let profiles = users.map(user => {
+    const worksCount = user.artworks.length + user.photoSeries.length
+    const likesCount = 
+      user.artworks.reduce((sum, a) => sum + a._count.likes, 0) + 
+      user.photoSeries.reduce((sum, s) => sum + s._count.likes, 0)
+    
+    const compositeScore = user._count.followers + likesCount + (worksCount * 10)
+    
+    const badges: string[] = []
+    if (user.createdAt > oneMonthAgo && worksCount >= 3) badges.push('Rising Star')
+    if (worksCount >= 20) badges.push('Prolific')
+    if (likesCount >= 50) badges.push('Well Loved')
+
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
+      isAvailableForHire: user.isAvailableForHire,
+      works: worksCount,
+      followers: user._count.followers,
+      appreciations: likesCount,
+      compositeScore,
+      badges,
+      isFollowedByMe: user.followers?.length > 0
+    }
+  }).filter(p => p.works > 0)
+
+  // Rank and add Top Creator badge
+  profiles.sort((a, b) => b.compositeScore - a.compositeScore)
+  const top10PercentIndex = Math.max(1, Math.floor(profiles.length * 0.1))
+  profiles.forEach((p, idx) => {
+    if (idx < top10PercentIndex) {
+      p.badges.push('Top Creator')
+    }
+  })
+
+  // Get Popular Tags
+  const artworksWithTags = await prisma.artwork.findMany({
+    where: { isPublished: true },
+    select: { tags: true }
+  })
+  
+  const tagCounts: Record<string, number> = {}
+  artworksWithTags.forEach(a => {
+    a.tags.forEach(t => {
+      tagCounts[t] = (tagCounts[t] || 0) + 1
+    })
+  })
+  
+  const popularTags = Object.entries(tagCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+    .map(([tag]) => tag)
+
   return (
-    <div className="flex-1 flex flex-col items-center pt-32 pb-24 bg-background px-4 md:px-8">
-      <div className="text-center mb-24 max-w-3xl">
-        <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 text-foreground leading-[1.1]">
-          Community
-        </h1>
-        <p className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-muted-foreground/80 font-bold border-y border-border/50 py-6">
-          Discover creators across the network.
-        </p>
-      </div>
-
-      {creators.length === 0 ? (
-        <div className="text-center py-32 border border-dashed border-border/50 rounded-3xl w-full max-w-4xl">
-          <Users size={32} className="mx-auto mb-4 text-muted-foreground/50" />
-          <p className="font-mono uppercase tracking-widest text-muted-foreground text-sm font-bold">No creators have joined yet.</p>
-        </div>
-      ) : (
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {creators.map((creator) => {
-            const totalWorks = creator._count.artworks + creator._count.photoSeries
-            return (
-              <Link
-                key={creator.id}
-                href={`/${creator.username}`}
-                className="group bg-card border border-border/50 rounded-2xl p-8 hover:border-foreground/20 transition-all duration-300 hover:shadow-2xl flex flex-col items-center text-center"
-              >
-                {/* Avatar */}
-                <div className="w-24 h-24 rounded-full bg-foreground/10 border-2 border-border flex items-center justify-center overflow-hidden mb-6 group-hover:border-foreground/40 transition-colors">
-                  {creator.avatarUrl ? (
-                    <img src={creator.avatarUrl} alt={creator.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="font-serif text-3xl font-black text-muted-foreground group-hover:text-foreground transition-colors">
-                      {creator.username.substring(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-
-                {/* Identity */}
-                <h2 className="font-serif text-xl font-bold text-foreground mb-1">
-                  {creator.displayName || creator.username}
-                </h2>
-                <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-4">
-                  @{creator.username}
-                </p>
-
-                {/* Bio snippet */}
-                {creator.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-6 leading-relaxed">
-                    {creator.bio}
-                  </p>
-                )}
-
-                {/* Stats */}
-                <div className="flex items-center gap-6 font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-auto pt-6 border-t border-border/50 w-full justify-center">
-                  <div className="flex flex-col items-center">
-                    <span className="text-foreground text-lg font-bold">{totalWorks}</span>
-                    <span>Works</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-foreground text-lg font-bold">{creator._count.followers}</span>
-                    <span>Followers</span>
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+    <div className="flex-1 flex flex-col items-center pt-32 pb-24 bg-background">
+      <CommunityTabs 
+        posts={posts} 
+        profiles={profiles} 
+        stats={{ creators: creatorsCount, works: worksCount, appreciations: appreciationsCount }}
+        isAuthenticated={!!authUser}
+        currentUserId={currentDbUser?.id}
+        popularTags={popularTags}
+      />
     </div>
   )
 }
